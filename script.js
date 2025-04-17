@@ -46,6 +46,10 @@ window.addEventListener('keyup', function (e) {
     keys[e.keyCode] = false;
 });
 
+
+//////////////////////////////////////////////////////////////////////////////
+
+
 function updateGame() {
     // Player movement input
     if (keys[39] && player.velX < player.speed) player.velX++; // Right arrow
@@ -102,6 +106,11 @@ function updateGame() {
             if (platform.isMoving) {
                 player.y = platform.y + platform.offsetY - player.height;
             }
+
+            if (platform.hasSpring) {
+                player.springJump();
+            }
+
         }
     });
     

@@ -45,5 +45,11 @@ export class Player {
       this.velY = 0;
       this.y = platform.y + platform.offsetY - this.height;
     }
+
+    springJump() {
+        this.jumping = true;
+        this.velY = -25; // much higher than normal jump
+      }
+      
   }
   

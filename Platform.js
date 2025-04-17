@@ -4,6 +4,7 @@ export class Platform {
     static MOVE_RANGE = 30;
     static MOVE_SPEED = 1;
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
+    static SPRING_CHANCE = 0.04; // 4% chance of having a spring
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
@@ -22,12 +23,14 @@ export class Platform {
         Platform.totalCount++;
 
         //platform movement
-        this.isMoving = Math.random() < Platform.MOVEMENT_CHANCE;
+        this.isMoving = Math.random() <= Platform.MOVEMENT_CHANCE;
         this.offsetY = 0; 
         if (this.isMoving) {
             this.startY = this.y;
             this.direction = 1; // Always start moving down
-        } 
+        }
+        
+        this.hasSpring = Math.random() <= Platform.SPRING_CHANCE; // 10% chance of having a spring
     }
   
     static choosePlatformWidth(canvasWidth) {
@@ -38,17 +41,15 @@ export class Platform {
             { widthFactor: 0.3, probability: 0.2 },   // Large (20%)
             { widthFactor: 0.4, probability: 0.05 }   // Very large (5%)
           ];
-  
       const rand = Math.random();
       let cumulative = 0;
-  
+
       for (let option of sizeOptions) {
         cumulative += option.probability;
         if (rand <= cumulative) {
           return canvasWidth * option.widthFactor;
         }
       }
-  
       return canvasWidth * 0.2;
     }
   
@@ -95,9 +96,13 @@ export class Platform {
           ctx.font = 'bold 16px Arial';
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
-      
           // Slightly above the platform
           ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
+        }
+
+        if(this.hasSpring) {
+            ctx.fillStyle = 'limegreen';
+            ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); // Draw spring
         }
       }
   
@@ -138,6 +143,9 @@ export class Platform {
             this.startY = this.y;
             this.direction = 1;
         }
+
+        //reset spring
+        this.hasSpring = Math.random() < Platform.SPRING_CHANCE;
     }
 
     startFallCheck(player) {
