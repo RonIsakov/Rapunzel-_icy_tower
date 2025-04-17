@@ -73,7 +73,6 @@ function updateGame() {
             platform.y += scrollAmount;
             if (platform.y > canvas.height) {
                 const highestY = Math.min(...platforms.map(p => p.y));
-                platform.y = highestY - 100; // 100px above the highest platform
                 platform.recycle(highestY, canvas.width);
             }
         });
@@ -86,6 +85,7 @@ function updateGame() {
     platforms.forEach(platform => {
         if (platform.collidesWith(player)) {
             player.landOn(platform);
+            platform.startFallCheck(player);
         }
     });
 

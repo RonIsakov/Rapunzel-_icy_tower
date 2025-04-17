@@ -1,10 +1,22 @@
 // Platform.js
 export class Platform {
+    static totalCount = 0;     // permanent counter
+static nextRecycleIndex = 10; // optional for tracking recycled identities
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
         this.x  = Math.random() * (canvas.width - this.width);
         this.y = canvas.height - (i * 100) - 50;
         this.height = 10;
+
+        //falling state
+        this.isPlayerOnTop = false;
+        this.timePlayerLanded = null;
+        this.isFalling = false;
+
+        //platform index and label
+        this.index = Platform.totalCount; 
+        this.label = this.index % 10 === 0 && this.index !== 0 ? `${this.index}` : null;
+        Platform.totalCount++;
     }
   
     static choosePlatformWidth(canvasWidth) {
@@ -60,10 +72,22 @@ export class Platform {
   
       return platforms;
     }
-  
+
+
     draw(ctx) {
         ctx.fillStyle = 'black';
         ctx.fillRect(this.x, this.y, this.width, this.height);
+      
+        // Draw the label if it exists
+        if (this.label !== null) {
+          ctx.fillStyle = 'white';
+          ctx.font = 'bold 16px Arial';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+      
+          // Slightly above the platform
+          ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+        }
       }
   
     collidesWith(player) {
@@ -76,9 +100,42 @@ export class Platform {
       }
   
     recycle(highestY, canvasWidth) {
-      this.width = Platform.choosePlatformWidth(canvasWidth);
-      this.x = Math.random() * (canvasWidth - this.width);
-      this.y = highestY - 100;
+        this.width = Platform.choosePlatformWidth(canvasWidth);
+        this.x = Math.random() * (canvasWidth - this.width);
+        this.y = highestY - 100;
+
+        //reset falling state
+        this.isPlayerOnTop = false;
+        this.timePlayerLanded = null;
+        this.isFalling = false;
+
+        //reset index and label
+        this.index = Platform.totalCount++;
+        this.label = this.index % 10 === 0 && this.index !== 0 ? `${this.index}` : null;
     }
+
+    startFallCheck(player) {
+  if (this.collidesWith(player)) {
+    if (!this.isPlayerOnTop) {
+      this.isPlayerOnTop = true;
+      this.timePlayerLanded = performance.now();
+    }
+  } else {
+    this.isPlayerOnTop = false;
+    this.timePlayerLanded = null;
+  }
+
+  if (this.isPlayerOnTop && !this.isFalling) {
+    const now = performance.now();
+    if (now - this.timePlayerLanded >= 4000) {
+      this.isFalling = true;
+    }
+  }
+
+  if (this.isFalling) {
+    this.y += 10; // Falling speed
+  }
+}
+
   }
   
