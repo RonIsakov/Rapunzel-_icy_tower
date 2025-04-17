@@ -1,0 +1,35 @@
+# Node and NPM (just in case)
+node_modules/
+package-lock.json
+
+# macOS system files
+.DS_Store
+
+# VS Code settings
+.vscode/
+
+# Live Server temp files
+*.tmp
+
+# Logs
+*.log
+
+# OS junk
+Thumbs.db
+Desktop.ini
+
+# Zip and archive files
+*.zip
+*.rar
+
+# Assets or builds (optional – only ignore if you build something)
+dist/
+build/
+
+# Python virtual environments (if any AI tools are involved later)
+.venv/
+venv/
+
+# Env files (for secrets, if added)
+.env
+.env.*
