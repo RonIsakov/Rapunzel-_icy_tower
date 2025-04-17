@@ -67,14 +67,13 @@ export class Platform {
       }
   
     collidesWith(player) {
-      return (
-        player.x < this.x + this.width &&
-        player.x + player.width > this.x &&
-        player.y + player.height > this.y &&
-        player.y + player.height < this.y + this.height &&
-        player.velY >= 0
-      );
-    }
+        const isOverlappingX = player.x < this.x + this.width && player.x + player.width > this.x;
+        const isLandingNow = player.previousY + player.height <= this.y &&  // was above
+                             player.y + player.height >= this.y &&          // now touching or below top
+                             player.velY >= 0;                              // falling
+      
+        return isOverlappingX && isLandingNow;
+      }
   
     recycle(highestY, canvasWidth) {
       this.width = Platform.choosePlatformWidth(canvasWidth);

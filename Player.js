@@ -5,6 +5,7 @@ export class Player {
       this.height = 20;
       this.x = canvas.width / 2;
       this.y = canvas.height - 150;
+      this.previousY = this.y;
       this.velX = 0;
       this.velY = 0;
       this.speed = 5;
@@ -12,11 +13,12 @@ export class Player {
     }
   
     applyPhysics(gravity, friction) {
-      this.velX *= friction;
-      this.velY += gravity;
-      this.x += this.velX;
-      this.y += this.velY;
-    }
+        this.previousY = this.y;       
+        this.velX *= friction;
+        this.velY += gravity;
+        this.x += this.velX;
+        this.y += this.velY;
+      }
   
     jump(baseJump) {
       this.jumping = true;
