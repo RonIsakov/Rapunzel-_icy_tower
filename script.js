@@ -34,6 +34,11 @@ let player = new Player(canvas);
 let platforms = Platform.generatePlatforms(10, canvas);
 console.log(platforms);
 
+// gameOver and leader board
+let isGameOver = false;
+let topScores = (JSON.parse(localStorage.getItem("topScores")) || []).filter(s => typeof s === 'number' && !isNaN(s));
+
+
 // Key Listener
 let keys = [];
 window.addEventListener('keydown', function (e) {
@@ -51,6 +56,8 @@ window.addEventListener('keyup', function (e) {
 
 
 function updateGame() {
+    if (isGameOver) return; // prevent multiple triggers
+
     // Player movement input
     if (keys[39] && player.velX < player.speed) player.velX++; // Right arrow
     if (keys[37] && player.velX > -player.speed) player.velX--; // Left arrow
@@ -113,22 +120,68 @@ function updateGame() {
 
         }
     });
+
+    platforms.forEach(platform => {
+        if (platform.enemy) {
+            platform.enemy.update();
     
-
-    // Update score based on total scroll
-    score.render();
-
+            if (platform.enemy.collidesWith(player) && !isGameOver) {
+                handleGameOver();
+            }
+        }
+    });
+    
+    
     // Draw everything
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw player
-    player.draw(ctx);
 
     // Draw platforms
     platforms.forEach(platform => platform.draw(ctx));
 
+    // Drawing enemies
+    platforms.forEach(platform => {
+        if (platform.enemy) {
+            platform.enemy.draw(ctx);
+        }
+        });
+
+    // Draw player
+    player.draw(ctx);
+
+    // Update score based on total scroll
+    score.render();
+
     requestAnimationFrame(updateGame);
 }
-
 updateGame();
  
+
+function handleGameOver() {
+    
+    isGameOver = true;
+    document.getElementById("gameOverScreen").style.display = "block";
+
+    // Save score to leaderboard
+    topScores.push(score.total());
+    topScores.sort((a, b) => b - a);
+    topScores = topScores.slice(0, 10); // keep top 10
+    localStorage.setItem("topScores", JSON.stringify(topScores));
+
+    // Render leaderboard
+    const leaderboard = document.getElementById("leaderboard");
+    leaderboard.innerHTML = "";
+    topScores.forEach((s, i) => {
+        const li = document.createElement("li");
+        li.textContent = `#${i + 1}: ${s}`;
+        leaderboard.appendChild(li);
+    });
+}
+
+window.restartGame = function () {
+    // Reset top-level state (optional cleanup)
+    isGameOver = false;
+    localStorage.setItem("topScores", JSON.stringify(topScores)); // re-save just in case
+    location.reload(); // simplest and cleanest reset
+};
+
+

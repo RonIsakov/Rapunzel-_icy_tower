@@ -9,6 +9,12 @@
 <body>
     <div id="score">Score: 0</div>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
+    <div id="gameOverScreen">
+        <h1>GAME OVER</h1>
+        <button onclick="restartGame()">Play Again</button>
+        <h2>Top Scores</h2>
+        <ol id="leaderboard"></ol>
+      </div>
     <script type="module" src="script.js"></script>
 </body>
 </html>

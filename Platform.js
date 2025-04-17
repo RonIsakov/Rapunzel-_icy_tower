@@ -1,10 +1,12 @@
 // Platform.js
+import { Enemy } from "./Enemy.js";  
 export class Platform {
     static totalCount = 0;     // permanent counter
     static MOVE_RANGE = 30;
     static MOVE_SPEED = 1;
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
     static SPRING_CHANCE = 0.04; // 4% chance of having a spring
+    static ENEMY_CHANCE = 0.5 ; // 5% chance of having an enemy
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
@@ -30,7 +32,17 @@ export class Platform {
             this.direction = 1; // Always start moving down
         }
         
+        //spring
         this.hasSpring = Math.random() <= Platform.SPRING_CHANCE; // 10% chance of having a spring
+
+        //enemy
+        if (Math.random() <= Platform.ENEMY_CHANCE) {
+          const enemyType = Math.random() < 0.5 ? 1 : 2; // 50% chance each
+          this.enemy = new Enemy(this, enemyType);
+        } else {
+          this.enemy = null;
+        }
+
     }
   
     static choosePlatformWidth(canvasWidth) {
