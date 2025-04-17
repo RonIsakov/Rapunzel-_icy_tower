@@ -7,6 +7,7 @@ export class Platform {
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
     static SPRING_CHANCE = 0.04; // 4% chance of having a spring
     static ENEMY_CHANCE = 0.5 ; // 5% chance of having an enemy
+    static STAR_CHANCE = 0.5; // 5% of platforms will get a star
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
@@ -33,19 +34,24 @@ export class Platform {
         }
         
         //spring
-        this.hasSpring = Math.random() <= Platform.SPRING_CHANCE; // 10% chance of having a spring
+        this.hasSpring = Math.random() <= Platform.SPRING_CHANCE;
+        
+        //star
+        this.hasStar = !this.hasSpring && Math.random() <= Platform.STAR_CHANCE;
 
         //enemy
-        if (Math.random() <= Platform.ENEMY_CHANCE) {
+        if (Math.random() <= Platform.ENEMY_CHANCE && !this.hasSpring && !this.hasStar) {
           const enemyType = Math.random() < 0.5 ? 1 : 2; // 50% chance each
           this.enemy = new Enemy(this, enemyType);
         } else {
           this.enemy = null;
         }
 
-    }
+      }
+
+    
   
-    static choosePlatformWidth(canvasWidth) {
+     static choosePlatformWidth(canvasWidth) {
         const sizeOptions = [
             { widthFactor: 0.1, probability: 0.05 },  // Very small (5%)
             { widthFactor: 0.15, probability: 0.2 },  // Small (20%)
@@ -111,10 +117,18 @@ export class Platform {
           // Slightly above the platform
           ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
         }
-
+        //draw spring
         if(this.hasSpring) {
             ctx.fillStyle = 'limegreen';
-            ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); // Draw spring
+            ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); 
+        }
+
+        //draw star
+        if (this.hasStar) {
+          ctx.fillStyle = 'gold';
+          ctx.beginPath();
+          ctx.arc(this.x + this.width / 2, this.y + this.offsetY - 15, 6, 0, Math.PI * 2);
+          ctx.fill();
         }
       }
   
@@ -135,30 +149,42 @@ export class Platform {
         return isOverlappingX && isLandingNow;
       }
   
-    recycle(highestY, canvasWidth) {
+      recycle(highestY, canvasWidth) {
         this.width = Platform.choosePlatformWidth(canvasWidth);
         this.x = Math.random() * (canvasWidth - this.width);
         this.y = highestY - 100;
-
-        //reset falling state
+    
+        // Reset falling state
         this.isPlayerOnTop = false;
         this.timePlayerLanded = null;
         this.isFalling = false;
-
-        //reset index and label
+    
+        // Reset index and label
         this.index = Platform.totalCount++;
         this.label = this.index % 10 === 0 && this.index !== 0 ? `${this.index}` : null;
-
-        //reset movement
+    
+        // Reset movement
         this.isMoving = Math.random() < Platform.MOVEMENT_CHANCE;
         if (this.isMoving) {
             this.startY = this.y;
             this.direction = 1;
         }
-
-        //reset spring
+    
+        // Reset spring
         this.hasSpring = Math.random() < Platform.SPRING_CHANCE;
+    
+        // Reset star (only if no spring)
+        this.hasStar = !this.hasSpring && Math.random() < Platform.STAR_CHANCE;
+    
+        // Reset enemy (only if no spring and no star)
+        if (!this.hasSpring && !this.hasStar && Math.random() < Platform.ENEMY_CHANCE) {
+            const enemyType = Math.random() < 0.5 ? 1 : 2;
+            this.enemy = new Enemy(this, enemyType);
+        } else {
+            this.enemy = null;
+        }
     }
+    
 
     startFallCheck(player) {
         if (this.collidesWith(player)) {
@@ -194,9 +220,9 @@ update() {
       }
     }
   }
-  
+}
   
 
 
-  }
+  
   

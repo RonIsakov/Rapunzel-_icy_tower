@@ -64,6 +64,8 @@ function updateGame() {
 
     // Apply physics to player
     player.applyPhysics(gravity, friction);
+    // Check for Invincibility
+    player.checkInvincibility();
 
     // Screen scroll when player climbs
     if (player.y < canvas.height / 4) {
@@ -118,14 +120,17 @@ function updateGame() {
                 player.springJump();
             }
 
-        }
+            if (platform.hasStar) {
+                platform.hasStar = false; // Remove the star
+                player.activateInvincibility(); // Grant power-up
+            }}
     });
 
     platforms.forEach(platform => {
         if (platform.enemy) {
             platform.enemy.update();
     
-            if (platform.enemy.collidesWith(player) && !isGameOver) {
+            if (platform.enemy.collidesWith(player) && !isGameOver && !player.invincible) {
                 handleGameOver();
             }
         }

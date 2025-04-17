@@ -10,6 +10,8 @@ export class Player {
       this.velY = 0;
       this.speed = 5;
       this.jumping = false;
+      this.invincible = false;
+      this.invincibleUntil = 0;
     }
   
     applyPhysics(gravity, friction) {
@@ -26,9 +28,10 @@ export class Player {
     }
   
     draw(ctx) {
-      ctx.fillStyle = 'red';
-      ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillStyle = this.invincible ? 'yellow' : 'red';
+        ctx.fillRect(this.x, this.y, this.width, this.height);
     }
+    
   
     constrainToCanvas(canvas) {
       if (this.x >= canvas.width - this.width) this.x = canvas.width - this.width;
@@ -50,6 +53,18 @@ export class Player {
         this.jumping = true;
         this.velY = -25; // much higher than normal jump
       }
+
+      activateInvincibility(duration = 7000) {
+        this.invincible = true;
+        this.invincibleUntil = performance.now() + duration;
+    }
+    
+    checkInvincibility() {
+        if (this.invincible && performance.now() > this.invincibleUntil) {
+            this.invincible = false;
+        }
+    }
+    
       
   }
   
