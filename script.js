@@ -1,5 +1,7 @@
 import { Platform } from './Platform.js';
+import { Player } from './Player.js';
 
+// Game setup (canvas and context)
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
@@ -15,10 +17,12 @@ window.addEventListener('resize', () => {
   
 
 
-// Game settings
+// Game phisics settings
 const gravity = 0.5;
 const friction = 0.8;
 const baseJump = -15; // Base jump velocity
+
+// Game Score variables
 let score = 0;
 let totalScroll = 0;
 let lastScrollTime = performance.now();
@@ -27,19 +31,11 @@ let bonusPoints = 0;
 
 const scoreDisplay = document.getElementById('score');
 
-// Player
-let player = {
-    x: canvas.width / 2,
-    y: canvas.height - 150,
-    width: 20,
-    height: 20,
-    speed: 5,
-    velX: 0,
-    velY: 0,
-    jumping: false
-};
+// creating the Player
+let player = new Player(canvas);
 
-// Platform generation
+
+// creating the Platforms array
 let platforms = Platform.generatePlatforms(10, canvas);
 console.log(platforms);
 
@@ -48,8 +44,7 @@ let keys = [];
 window.addEventListener('keydown', function (e) {
     keys[e.keyCode] = true;
     if (e.keyCode === 32 && !player.jumping) { // Space key
-        player.jumping = true;
-        player.velY = baseJump - Math.abs(player.velX); // More velocity = higher jump
+        player.jump(baseJump);
     }
 });
 window.addEventListener('keyup', function (e) {
@@ -61,11 +56,8 @@ function updateGame() {
     if (keys[39] && player.velX < player.speed) player.velX++; // Right arrow
     if (keys[37] && player.velX > -player.speed) player.velX--; // Left arrow
 
-    // Apply physics
-    player.velX *= friction;
-    player.velY += gravity;
-    player.x += player.velX;
-    player.y += player.velY;
+    // Apply physics to player
+    player.applyPhysics(gravity, friction);
 
     // Screen scroll when player climbs
     if (player.y < canvas.height / 4) {
@@ -73,7 +65,7 @@ function updateGame() {
         player.y += scrollAmount;
         totalScroll += scrollAmount;
         
-        // ⏱️ Calculate time since last scroll
+        // Calculate time since last scroll
         let now = performance.now();
         let timeElapsed = now - lastScrollTime;
         
@@ -92,16 +84,8 @@ function updateGame() {
         });
     }
 
-    // Wall collision
-    if (player.x >= canvas.width - player.width) player.x = canvas.width - player.width;
-    if (player.x <= 0) player.x = 0;
-
-    // Floor collision
-    if (player.y >= canvas.height - player.height) {
-        player.y = canvas.height - player.height;
-        player.jumping = false;
-        player.velY = 0;
-    }
+    // Constrain player to canvas
+    player.constrainToCanvas(canvas);
 
     // Platform collision
     platforms.forEach(platform => {
@@ -120,8 +104,7 @@ function updateGame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     // Draw player
-    ctx.fillStyle = 'red';
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    player.draw(ctx);
 
     // Draw platforms
     platforms.forEach(platform => platform.draw(ctx));

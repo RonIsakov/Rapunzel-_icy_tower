@@ -1,0 +1,47 @@
+// Player.js
+export class Player {
+    constructor(canvas) {
+      this.width = 20;
+      this.height = 20;
+      this.x = canvas.width / 2;
+      this.y = canvas.height - 150;
+      this.velX = 0;
+      this.velY = 0;
+      this.speed = 5;
+      this.jumping = false;
+    }
+  
+    applyPhysics(gravity, friction) {
+      this.velX *= friction;
+      this.velY += gravity;
+      this.x += this.velX;
+      this.y += this.velY;
+    }
+  
+    jump(baseJump) {
+      this.jumping = true;
+      this.velY = baseJump - Math.abs(this.velX);
+    }
+  
+    draw(ctx) {
+      ctx.fillStyle = 'red';
+      ctx.fillRect(this.x, this.y, this.width, this.height);
+    }
+  
+    constrainToCanvas(canvas) {
+      if (this.x >= canvas.width - this.width) this.x = canvas.width - this.width;
+      if (this.x <= 0) this.x = 0;
+      if (this.y >= canvas.height - this.height) {
+        this.y = canvas.height - this.height;
+        this.jumping = false;
+        this.velY = 0;
+      }
+    }
+  
+    landOn(platform) {
+      this.jumping = false;
+      this.velY = 0;
+      this.y = platform.y - this.height;
+    }
+  }
+  
