@@ -1,5 +1,6 @@
 import { Platform } from './Platform.js';
 import { Player } from './Player.js';
+import { Score } from './Score.js';
 
 // Game setup (canvas and context)
 const canvas = document.getElementById('gameCanvas');
@@ -22,18 +23,12 @@ const gravity = 0.5;
 const friction = 0.8;
 const baseJump = -15; // Base jump velocity
 
-// Game Score variables
-let score = 0;
-let totalScroll = 0;
+// Score system
+const score = new Score(document.getElementById('score'));
 let lastScrollTime = performance.now();
-let bonusPoints = 0;
-  
-
-const scoreDisplay = document.getElementById('score');
 
 // creating the Player
 let player = new Player(canvas);
-
 
 // creating the Platforms array
 let platforms = Platform.generatePlatforms(10, canvas);
@@ -63,14 +58,14 @@ function updateGame() {
     if (player.y < canvas.height / 4) {
         let scrollAmount = Math.abs(player.velY);
         player.y += scrollAmount;
-        totalScroll += scrollAmount;
+        score.update(scrollAmount);
         
         // Calculate time since last scroll
         let now = performance.now();
         let timeElapsed = now - lastScrollTime;
         
         if (timeElapsed < 500) { // climbed again in under 0.5 seconds? reward!
-            bonusPoints += 5; // or whatever value feels good
+            score.addBonus(scrollAmount * 1.3); // 1.3 times points for fast climbs
         }
         lastScrollTime = now;
         
@@ -90,15 +85,12 @@ function updateGame() {
     // Platform collision
     platforms.forEach(platform => {
         if (platform.collidesWith(player)) {
-            player.jumping = false;
-            player.velY = 0;
-            player.y = platform.y - player.height;
+            player.landOn(platform);
         }
     });
 
     // Update score based on total scroll
-    score = Math.floor(totalScroll + bonusPoints);
-    scoreDisplay.innerText = "Score: " + score;
+    score.render();
 
     // Draw everything
     ctx.clearRect(0, 0, canvas.width, canvas.height);
