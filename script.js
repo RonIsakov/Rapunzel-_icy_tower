@@ -70,13 +70,25 @@ function updateGame() {
         lastScrollTime = now;
         
         platforms.forEach(platform => {
-            platform.y += scrollAmount;
+            if (platform.isMoving) {
+                platform.update(); // Move platform (bounce) first
+            }
+        
+            platform.y += scrollAmount; // Then apply scroll shift
+        
             if (platform.y > canvas.height) {
                 const highestY = Math.min(...platforms.map(p => p.y));
                 platform.recycle(highestY, canvas.width);
             }
-        });
+        });        
     }
+
+    //move platforms
+    platforms.forEach(platform => {
+        if (platform.isMoving && !platform.isFalling) {
+            platform.update(); // Move platform (bounce) first
+        }
+    });
 
     // Constrain player to canvas
     player.constrainToCanvas(canvas);
@@ -86,8 +98,13 @@ function updateGame() {
         if (platform.collidesWith(player)) {
             player.landOn(platform);
             platform.startFallCheck(player);
+    
+            if (platform.isMoving) {
+                player.y = platform.y + platform.offsetY - player.height;
+            }
         }
     });
+    
 
     // Update score based on total scroll
     score.render();

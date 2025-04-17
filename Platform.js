@@ -1,7 +1,10 @@
 // Platform.js
 export class Platform {
     static totalCount = 0;     // permanent counter
-static nextRecycleIndex = 10; // optional for tracking recycled identities
+    static MOVE_RANGE = 30;
+    static MOVE_SPEED = 1;
+    static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
+
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
         this.x  = Math.random() * (canvas.width - this.width);
@@ -17,6 +20,14 @@ static nextRecycleIndex = 10; // optional for tracking recycled identities
         this.index = Platform.totalCount; 
         this.label = this.index % 10 === 0 && this.index !== 0 ? `${this.index}` : null;
         Platform.totalCount++;
+
+        //platform movement
+        this.isMoving = Math.random() < Platform.MOVEMENT_CHANCE;
+        this.offsetY = 0; 
+        if (this.isMoving) {
+            this.startY = this.y;
+            this.direction = 1; // Always start moving down
+        } 
     }
   
     static choosePlatformWidth(canvasWidth) {
@@ -76,7 +87,7 @@ static nextRecycleIndex = 10; // optional for tracking recycled identities
 
     draw(ctx) {
         ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+        ctx.fillRect(this.x, this.y + this.offsetY, this.width, this.height);
       
         // Draw the label if it exists
         if (this.label !== null) {
@@ -86,15 +97,23 @@ static nextRecycleIndex = 10; // optional for tracking recycled identities
           ctx.textBaseline = 'middle';
       
           // Slightly above the platform
-          ctx.fillText(this.label, this.x + this.width / 2, this.y + this.height / 2);
+          ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
         }
       }
   
-    collidesWith(player) {
-        const isOverlappingX = player.x < this.x + this.width && player.x + player.width > this.x;
-        const isLandingNow = player.previousY + player.height <= this.y &&  // was above
-                             player.y + player.height >= this.y &&          // now touching or below top
-                             player.velY >= 0;                              // falling
+      collidesWith(player) {
+        const platformY = this.y + this.offsetY;
+      
+        const isOverlappingX = 
+          player.x < this.x + this.width && 
+          player.x + player.width > this.x;
+      
+        const verticalThreshold = 5; // ← allow for small movement wiggle room
+      
+        const isLandingNow = 
+          player.previousY + player.height <= platformY + verticalThreshold &&
+          player.y + player.height >= platformY &&
+          player.velY >= 0;
       
         return isOverlappingX && isLandingNow;
       }
@@ -112,30 +131,52 @@ static nextRecycleIndex = 10; // optional for tracking recycled identities
         //reset index and label
         this.index = Platform.totalCount++;
         this.label = this.index % 10 === 0 && this.index !== 0 ? `${this.index}` : null;
+
+        //reset movement
+        this.isMoving = Math.random() < Platform.MOVEMENT_CHANCE;
+        if (this.isMoving) {
+            this.startY = this.y;
+            this.direction = 1;
+        }
     }
 
     startFallCheck(player) {
-  if (this.collidesWith(player)) {
-    if (!this.isPlayerOnTop) {
-      this.isPlayerOnTop = true;
-      this.timePlayerLanded = performance.now();
-    }
-  } else {
-    this.isPlayerOnTop = false;
-    this.timePlayerLanded = null;
-  }
+        if (this.collidesWith(player)) {
+            if (!this.isPlayerOnTop) {
+                this.isPlayerOnTop = true;
+                this.timePlayerLanded = performance.now();
+                }
+        } else {
+            this.isPlayerOnTop = false;
+            this.timePlayerLanded = null;
+        }
 
-  if (this.isPlayerOnTop && !this.isFalling) {
-    const now = performance.now();
+    if (this.isPlayerOnTop && !this.isFalling) {
+        const now = performance.now();
     if (now - this.timePlayerLanded >= 4000) {
-      this.isFalling = true;
+        this.isFalling = true;
+        this.isMoving = false; // Stop moving when falling
     }
-  }
+  } 
 
   if (this.isFalling) {
-    this.y += 10; // Falling speed
+     this.y += 10; // Falling speed
+     this.offsetY = 0; 
   }
 }
+
+update() {
+    if (this.isMoving) {
+      this.offsetY += this.direction * Platform.MOVE_SPEED;
+  
+      if (this.offsetY > Platform.MOVE_RANGE || this.offsetY < -Platform.MOVE_RANGE) {
+        this.direction *= -1;
+      }
+    }
+  }
+  
+  
+
 
   }
   

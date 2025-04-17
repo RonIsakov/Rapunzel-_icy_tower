@@ -43,7 +43,7 @@ export class Player {
     landOn(platform) {
       this.jumping = false;
       this.velY = 0;
-      this.y = platform.y - this.height;
+      this.y = platform.y + platform.offsetY - this.height;
     }
   }
   
