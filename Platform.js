@@ -1,19 +1,21 @@
 // Platform.js
-import { Enemy } from "./Enemy.js";  
+import { Enemy } from "./Enemy.js"; 
+const platformImage = new Image();
+platformImage.src = './platform.png';
 export class Platform {
     static totalCount = 0;     // permanent counter
     static MOVE_RANGE = 30;
     static MOVE_SPEED = 1;
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
     static SPRING_CHANCE = 0.04; // 4% chance of having a spring
-    static ENEMY_CHANCE = 0.5 ; // 5% chance of having an enemy
-    static STAR_CHANCE = 0.5; // 5% of platforms will get a star
+    static ENEMY_CHANCE = 0.1 ; // 5% chance of having an enemy
+    static STAR_CHANCE = 0.05; // 5% of platforms will get a star
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
         this.x  = Math.random() * (canvas.width - this.width);
         this.y = canvas.height - (i * 100) - 50;
-        this.height = 10;
+        this.height = 30;
 
         //falling state
         this.isPlayerOnTop = false;
@@ -49,7 +51,8 @@ export class Platform {
 
       }
 
-    
+      
+      
   
      static choosePlatformWidth(canvasWidth) {
         const sizeOptions = [
@@ -105,32 +108,32 @@ export class Platform {
 
 
     draw(ctx) {
-        ctx.fillStyle = 'black';
-        ctx.fillRect(this.x, this.y + this.offsetY, this.width, this.height);
+      ctx.drawImage(platformImage, this.x, this.y + this.offsetY, this.width, this.height);
       
-        // Draw the label if it exists
-        if (this.label !== null) {
-          ctx.fillStyle = 'white';
-          ctx.font = 'bold 16px Arial';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          // Slightly above the platform
-          ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
-        }
-        //draw spring
-        if(this.hasSpring) {
-            ctx.fillStyle = 'limegreen';
-            ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); 
-        }
-
-        //draw star
-        if (this.hasStar) {
-          ctx.fillStyle = 'gold';
-          ctx.beginPath();
-          ctx.arc(this.x + this.width / 2, this.y + this.offsetY - 15, 6, 0, Math.PI * 2);
-          ctx.fill();
-        }
+      // Draw the label if it exists
+      if (this.label !== null) {
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
       }
+  
+      // Draw spring
+      if(this.hasSpring) {
+          ctx.fillStyle = 'limegreen';
+          ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); 
+      }
+  
+      // Draw star
+      if (this.hasStar) {
+        ctx.fillStyle = 'gold';
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + this.offsetY - 15, 6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+  }
+  
   
       collidesWith(player) {
         const platformY = this.y + this.offsetY;

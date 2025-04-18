@@ -1,8 +1,8 @@
 // Player.js
 export class Player {
     constructor(canvas) {
-      this.width = 20;
-      this.height = 20;
+      this.width = 32;
+      this.height = 32;
       this.x = canvas.width / 2;
       this.y = canvas.height - 150;
       this.previousY = this.y;
@@ -12,6 +12,8 @@ export class Player {
       this.jumping = false;
       this.invincible = false;
       this.invincibleUntil = 0;
+      this.image = new Image();
+      this.image.src = "./player.png";
     }
   
     applyPhysics(gravity, friction) {
@@ -28,9 +30,11 @@ export class Player {
     }
   
     draw(ctx) {
-        ctx.fillStyle = this.invincible ? 'yellow' : 'red';
-        ctx.fillRect(this.x, this.y, this.width, this.height);
-    }
+        if (this.invincible) ctx.globalAlpha = 0.6;
+        ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+        ctx.globalAlpha = 1.0;
+      }
+      
     
   
     constrainToCanvas(canvas) {
@@ -65,6 +69,5 @@ export class Player {
         }
     }
     
-      
   }
   

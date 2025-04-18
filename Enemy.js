@@ -1,9 +1,12 @@
 // Enemy.js
+const banditImage = new Image();
+banditImage.src = './bandit.png';
+
 export class Enemy {
     constructor(platform, type) {
       this.type = type; // 1 = static, 2 = moving
-      this.width = 20;
-      this.height = 20;
+      this.width = 32;
+      this.height = 32;
   
       this.platform = platform;
       this.x = platform.x + platform.width / 2 - this.width / 2;
@@ -32,10 +35,9 @@ export class Enemy {
     }
   
     draw(ctx) {
-        //console.log("its alive")
-        ctx.fillStyle = "red"
-        ctx.fillRect(this.x, this.y, this.width, this.height);
+          ctx.drawImage(banditImage, this.x, this.y, this.width, this.height);
       }
+      
   
     collidesWith(player) {
       return (
