@@ -20,11 +20,11 @@ export class Platform {
     static MOVE_RANGE = 30;
     static MOVE_SPEED = 1;
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
-    static SPRING_CHANCE = 0.04; // 4% chance of having a spring
+    static SPRING_CHANCE = 0.05; // 4% chance of having a spring
     static ENEMY_CHANCE = 0.2 ; // 5% chance of having an enemy
     static STAR_CHANCE = 0.05; // 5% of platforms will get a star
     static TRESURE_CHANCE = 0.2; // 5% of platforms will get a treasure
-    static BOOT_CHANCE = 0.5; // 5% of platforms will get a boot
+    static BOOT_CHANCE = 0.06; // 5% of platforms will get a boot
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
