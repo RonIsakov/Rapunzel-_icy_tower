@@ -35,7 +35,7 @@
     left: 50%;
     transform: translateX(-50%);
     background-color: rgba(0, 0, 0, 0.8);
-    color: white;
+    color: rgb(231, 184, 29);
     padding: 30px;
     border-radius: 10px;
     z-index: 10;
@@ -59,6 +59,29 @@
     text-align: left;
     margin: 20px auto 0;
     max-width: 200px;
+  }
+  #characterSelect {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    padding: 30px;
+    border-radius: 15px;
+    text-align: center;
+    z-index: 20;
+    color :rgb(230, 162, 60);
+  }
+  
+  .charChoice {
+    width: 100px;
+    margin: 10px;
+    cursor: pointer;
+    border: 3px solid white;
+    border-radius: 8px;
+  }
+  .charChoice:hover {
+    border-color: gold;
   }
   
   

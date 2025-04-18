@@ -9,14 +9,22 @@ coinImage.src = './goldCoin.png';
 const springImage = new Image();
 springImage.src = './spring.png';
 
+const chestImage = new Image();
+chestImage.src = './tresure.png';
+
+const bootImage = new Image();
+bootImage.src = './boots.png';   
+
 export class Platform {
     static totalCount = 0;     // permanent counter
     static MOVE_RANGE = 30;
     static MOVE_SPEED = 1;
     static MOVEMENT_CHANCE = 0.06; // 6% chance of moving
     static SPRING_CHANCE = 0.04; // 4% chance of having a spring
-    static ENEMY_CHANCE = 0.1 ; // 5% chance of having an enemy
+    static ENEMY_CHANCE = 0.2 ; // 5% chance of having an enemy
     static STAR_CHANCE = 0.05; // 5% of platforms will get a star
+    static TRESURE_CHANCE = 0.2; // 5% of platforms will get a treasure
+    static BOOT_CHANCE = 0.5; // 5% of platforms will get a boot
 
     constructor(canvas, i) {
         this.width = Platform.choosePlatformWidth(canvas.width);
@@ -41,6 +49,7 @@ export class Platform {
             this.startY = this.y;
             this.direction = 1; // Always start moving down
         }
+      
         
         //spring
         this.hasSpring = Math.random() <= Platform.SPRING_CHANCE;
@@ -48,8 +57,14 @@ export class Platform {
         //star
         this.hasStar = !this.hasSpring && Math.random() <= Platform.STAR_CHANCE;
 
+        //treasure
+        this.hasChest = !this.hasSpring && !this.hasStar && Math.random() <= Platform.TRESURE_CHANCE;
+
+        //boot
+        this.hasBoot = !this.hasSpring && !this.hasStar && !this.hasChest && Math.random() <= Platform.BOOT_CHANCE;
+
         //enemy
-        if (Math.random() <= Platform.ENEMY_CHANCE && !this.hasSpring && !this.hasStar) {
+        if (Math.random() <= Platform.ENEMY_CHANCE && !this.hasSpring && !this.hasStar && !this.hasChest && !this.hasBoot) {
           const enemyType = Math.random() < 0.5 ? 1 : 2; // 50% chance each
           this.enemy = new Enemy(this, enemyType);
         } else {
@@ -57,6 +72,7 @@ export class Platform {
         }
 
       }
+    
 
       
       
@@ -157,8 +173,28 @@ export class Platform {
         );
       }
       
+      if (this.hasChest) {
+        if (this.hasChest) {
+          ctx.drawImage(
+            chestImage,                             // preload your chest image at top of file
+            this.x + (this.width/2) - 16,           // center (assuming chest is 24×24px)
+            this.y + this.offsetY - 20,             // float just above
+            32, 32
+          );
+        }
+      }
+
+      if(this.hasBoot){
+        ctx.drawImage(
+          bootImage,
+          this.x + this.width/2 - 16,    // center of platform
+          this.y + this.offsetY - 20,    // floating just above
+          32,32                          // size of your boot sprite
+        );
+      }
+    }
       
-  }
+  
   
   
       collidesWith(player) {
@@ -204,15 +240,36 @@ export class Platform {
     
         // Reset star (only if no spring)
         this.hasStar = !this.hasSpring && Math.random() < Platform.STAR_CHANCE;
+
+        //reset treasure (only if no spring and no star)
+        this.hasChest = !this.hasSpring && !this.hasStar && Math.random() < Platform.TRESURE_CHANCE;
+        if (this.hasChest) {
+            this.hasChest = true;
+        } else {
+            this.hasChest = false;
+        }
+
+        this.boot = !this.hasSpring && !this.hasStar && Math.random() && !this.hasChest < Platform.BOOT_CHANCE;
+        if (this.hasBoot) {
+            this.hasBoot = true;
+        } else {
+            this.hasBoot = false;
+        }
     
         // Reset enemy (only if no spring and no star)
-        if (!this.hasSpring && !this.hasStar && Math.random() < Platform.ENEMY_CHANCE) {
-            const enemyType = Math.random() < 0.5 ? 1 : 2;
-            this.enemy = new Enemy(this, enemyType);
+        if (
+          !this.hasSpring &&
+          !this.hasStar &&
+          !this.hasChest &&
+          !this.hasBoot &&            // <-- NO parentheses here!
+          Math.random() < Platform.ENEMY_CHANCE
+        ) {
+          const enemyType = Math.random() < 0.5 ? 1 : 2;
+          this.enemy = new Enemy(this, enemyType);
         } else {
-            this.enemy = null;
+          this.enemy = null;
         }
-    }
+      }
     
 
     startFallCheck(player) {
@@ -250,7 +307,7 @@ update() {
     }
   }
 }
-  
+
 
 
   

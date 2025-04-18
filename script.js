@@ -7,7 +7,10 @@ const coinSound = new Audio('./sounds/coin.mp3');
 const hitSound = new Audio('./sounds/hit.mp3');
 const gameOverSound = new Audio('./sounds/game-over.mp3');
 const bgMusic = new Audio('./sounds/background_music.mp3');
-bgMusic.loop = true;
+const playerSelect = new Audio('./sounds/warriorSelect.mp3');
+const wizardSelect = new Audio('./sounds/magical-spell-cast.mp3');
+const jesterSelect = new Audio('./sounds/jesterSelect.mp3');
+const bootsSound = new Audio('./sounds/boots.mp3');
 
 // Game setup (canvas and context)
 const canvas = document.getElementById('gameCanvas');
@@ -34,8 +37,43 @@ const baseJump = -15; // Base jump velocity
 const score = new Score(document.getElementById('score'));
 let lastScrollTime = performance.now();
 
-// creating the Player
-let player = new Player(canvas);
+// Character selection
+let player     = null;
+let selectedCharacter = null;
+
+// 2) Pure selector – no listener registration here!
+function selectCharacter(character) {
+  selectedCharacter = character;
+  if(selectedCharacter === 'player') {
+    playerSelect.play();}
+    else if(selectedCharacter === 'wizard') {
+        wizardSelect.play();}
+        else if(selectedCharacter === 'courtJester') {
+            jesterSelect.play();}
+  document.getElementById('characterSelect').style.display = 'none';
+
+  // create your Player instance with the chosen skin
+  player = new Player(canvas, selectedCharacter);
+
+  // now we can start the game loop for real
+  requestAnimationFrame(updateGame);
+}
+
+// 3) One‐time setup to wire up your images
+function initCharacterSelection() {
+  const container = document.getElementById('characterSelect');
+  container.querySelectorAll('img[data-char]').forEach(img => {
+    img.style.cursor = 'pointer';
+    img.addEventListener('click', () => {
+      selectCharacter(img.dataset.char);
+    });
+  });
+}
+
+// 4) On page load, call the initializer – but DO NOT start the game yet!
+initCharacterSelection();
+
+
 
 // creating the Platforms array
 let platforms = Platform.generatePlatforms(10, canvas);
@@ -56,7 +94,7 @@ window.addEventListener('keydown', function (e) {
         bgMusic.play();
         bgMusic.playing = true;
 
-        [jumpSound, springSound, coinSound, hitSound, gameOverSound].forEach(sound => {
+        [jumpSound, springSound, coinSound, hitSound, gameOverSound, bootsSound].forEach(sound => {
             sound.volume = 0;
             sound.play().then(() => {
                 sound.pause();
@@ -69,7 +107,7 @@ window.addEventListener('keydown', function (e) {
     }
 
     keys[e.keyCode] = true;
-    if (e.keyCode === 32 && !player.jumping) { // Space key
+    if (e.keyCode === 32) { // Space key
         jumpSound.play();
         player.jump(baseJump);
         
@@ -84,6 +122,11 @@ window.addEventListener('keyup', function (e) {
 
 
 function updateGame() {
+    bgMusic.volume = 0.2; // Set volume for background music
+    if (bgMusic.paused) {
+        bgMusic.play();
+    }
+
     if (isGameOver) return; // prevent multiple triggers
 
     // Player movement input
@@ -134,6 +177,12 @@ function updateGame() {
     // Constrain player to canvas
     player.constrainToCanvas(canvas);
 
+    // ** NEW: if we’re touching the bottom and we’ve already scored >1, game over **
+  if (!isGameOver && player.y >= canvas.height - player.height && score.total() > 1) {
+    handleGameOver();
+    return;   // bail out so we don’t keep updating/drawing
+  }
+
     // Platform collision
     platforms.forEach(platform => {
         if (platform.collidesWith(player)) {
@@ -154,7 +203,21 @@ function updateGame() {
                 score.addBonus(100); // Add bonus points
                 platform.hasStar = false; // Remove the star
                 player.activateInvincibility(); // Grant power-up
-            }}
+            }
+        
+            if (platform.hasChest) {
+                coinSound.play();
+                score.addBonus(500); // Add bonus points
+                platform.hasChest = false; // Remove the treasure
+            }
+
+            if(platform.hasBoot){
+                bootsSound.play();
+                player.hasDoubleJump = true;   // grant the power
+                platform.hasBoot = false;       // remove it
+                // optional: play a “power‑up” sound here
+              }
+        }
     });
 
     platforms.forEach(platform => {
@@ -190,7 +253,7 @@ function updateGame() {
 
     requestAnimationFrame(updateGame);
 }
-updateGame();
+//updateGame();
  
 
 function handleGameOver() {
@@ -209,7 +272,7 @@ function handleGameOver() {
     leaderboard.innerHTML = "";
     topScores.forEach((s, i) => {
         const li = document.createElement("li");
-        li.textContent = `#${i + 1}: ${s}`;
+        li.textContent = `${s}`;
         leaderboard.appendChild(li);
     });
 }
