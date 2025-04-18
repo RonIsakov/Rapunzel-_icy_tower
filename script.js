@@ -1,6 +1,13 @@
 import { Platform } from './Platform.js';
 import { Player } from './Player.js';
 import { Score } from './Score.js';
+const jumpSound = new Audio('./sounds/jump.mp3');
+const springSound = new Audio('./sounds/spring.mp3');
+const coinSound = new Audio('./sounds/coin.mp3');
+const hitSound = new Audio('./sounds/hit.mp3');
+const gameOverSound = new Audio('./sounds/game-over.mp3');
+const bgMusic = new Audio('./sounds/background_music.mp3');
+bgMusic.loop = true;
 
 // Game setup (canvas and context)
 const canvas = document.getElementById('gameCanvas');
@@ -38,13 +45,34 @@ console.log(platforms);
 let isGameOver = false;
 let topScores = (JSON.parse(localStorage.getItem("topScores")) || []).filter(s => typeof s === 'number' && !isNaN(s));
 
+let soundsUnlocked = false;
+
 
 // Key Listener
 let keys = [];
 window.addEventListener('keydown', function (e) {
+    if (!soundsUnlocked) {
+        // Unlock sounds only once
+        bgMusic.play();
+        bgMusic.playing = true;
+
+        [jumpSound, springSound, coinSound, hitSound, gameOverSound].forEach(sound => {
+            sound.volume = 0;
+            sound.play().then(() => {
+                sound.pause();
+                sound.currentTime = 0;
+                sound.volume = 1;
+            });
+        });
+
+        soundsUnlocked = true;
+    }
+
     keys[e.keyCode] = true;
     if (e.keyCode === 32 && !player.jumping) { // Space key
+        jumpSound.play();
         player.jump(baseJump);
+        
     }
 });
 window.addEventListener('keyup', function (e) {
@@ -118,9 +146,12 @@ function updateGame() {
 
             if (platform.hasSpring) {
                 player.springJump();
+                springSound.play();
             }
 
             if (platform.hasStar) {
+                coinSound.play();
+                score.addBonus(100); // Add bonus points
                 platform.hasStar = false; // Remove the star
                 player.activateInvincibility(); // Grant power-up
             }}
@@ -131,6 +162,7 @@ function updateGame() {
             platform.enemy.update();
     
             if (platform.enemy.collidesWith(player) && !isGameOver && !player.invincible) {
+                hitSound.play();
                 handleGameOver();
             }
         }
@@ -162,7 +194,7 @@ updateGame();
  
 
 function handleGameOver() {
-    
+    gameOverSound.play();
     isGameOver = true;
     document.getElementById("gameOverScreen").style.display = "block";
 

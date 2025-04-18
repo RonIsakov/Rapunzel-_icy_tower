@@ -2,6 +2,13 @@
 import { Enemy } from "./Enemy.js"; 
 const platformImage = new Image();
 platformImage.src = './platform.png';
+
+const coinImage = new Image();
+coinImage.src = './goldCoin.png';
+
+const springImage = new Image();
+springImage.src = './spring.png';
+
 export class Platform {
     static totalCount = 0;     // permanent counter
     static MOVE_RANGE = 30;
@@ -108,7 +115,19 @@ export class Platform {
 
 
     draw(ctx) {
-      ctx.drawImage(platformImage, this.x, this.y + this.offsetY, this.width, this.height);
+      const SPRITE_CROP = {
+        x: 20,              // crop 10px from left
+        y: 20,              // crop 10px from top
+        width: platformImage.width - 40,  // crop left + right
+        height: platformImage.height - 20
+      };
+       
+      ctx.drawImage(
+        platformImage,
+        SPRITE_CROP.x, SPRITE_CROP.y, SPRITE_CROP.width, SPRITE_CROP.height, // crop source rect
+        this.x, this.y + this.offsetY, this.width, this.height               // destination box
+      );
+      
       
       // Draw the label if it exists
       if (this.label !== null) {
@@ -119,19 +138,26 @@ export class Platform {
         ctx.fillText(this.label, this.x + this.width / 2, this.y + this.offsetY + this.height / 2);
       }
   
-      // Draw spring
-      if(this.hasSpring) {
-          ctx.fillStyle = 'limegreen';
-          ctx.fillRect(this.x + this.width / 2 - 5, this.y + this.offsetY - 10, 10, 10); 
+      if (this.hasSpring) {
+        ctx.drawImage(
+          springImage,
+          this.x + (this.width / 2) - (100 / 2),      // center horizontally
+          this.y + this.offsetY - 30,                // adjust vertical position as needed
+          100, 50
+        );
       }
-  
-      // Draw star
+      
+      
       if (this.hasStar) {
-        ctx.fillStyle = 'gold';
-        ctx.beginPath();
-        ctx.arc(this.x + this.width / 2, this.y + this.offsetY - 15, 6, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.drawImage(
+          coinImage,
+          this.x + (this.width / 2) - 16,            // 32 / 2 = 16
+          this.y + this.offsetY - 20,                // vertical offset for floating above
+          32, 32
+        );
       }
+      
+      
   }
   
   
